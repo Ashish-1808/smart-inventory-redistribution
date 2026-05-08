@@ -1,5 +1,8 @@
-const { Pool } = require("pg");
-require("dotenv").config();
+import pkg from "pg";
+const { Pool } = pkg;
+
+import dotenv from "dotenv";
+dotenv.config();
 
 const pool = new Pool({
   host: process.env.DB_HOST,
@@ -13,15 +16,13 @@ const pool = new Pool({
   connectionTimeoutMillis: 2000,
 });
 
-//log the errors
+// log errors
 pool.on("error", (err) => {
-  console.log("PG Error", err);
+  console.error("PG Error:", err);
   process.exit(1);
 });
 
+// helper query function
 const query = (text, params) => pool.query(text, params);
 
-module.exports = {
-  pool,
-  query,
-};
+export { pool, query };
