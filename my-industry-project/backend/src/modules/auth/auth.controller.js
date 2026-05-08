@@ -1,36 +1,49 @@
-const AuthService = require("./auth.service");
-// import isJSON from "../../../node_modules/validator/es/lib/isJSON";
+import AuthService from "./auth.service.js";
 
-exports.login = async (req, res) => {
+// LOGIN
+const login = async (req, res) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
     return res.status(400).json({
-      message: "username and password is required",
+      message: "Email and password are required",
     });
   }
 
-  const result = await AuthService.login({ email, password });
-  if (!result) {
-    return res.status(401).json({
-      message: "Invalid Username or Password",
+  try {
+    const result = await AuthService.login({ email, password });
+
+    if (!result) {
+      return res.status(401).json({
+        message: "Invalid email or password",
+      });
+    }
+
+    return res.status(200).json({
+      message: "Login successful",
+      token: result.token,
+      user: result.user,
+    });
+  } catch (error) {
+    console.error("Login Error:", error);
+
+    return res.status(500).json({
+      message: "Internal Server Error",
     });
   }
-  return res.status(200).json({
-    message: "Login Successful",
-    token: result.token,
-    user: result.user,
-  });
 };
 
-exports.signup = async (req, res) => {
+// SIGNUP
+const signup = async (req, res) => {
   const { firstName, lastName, email, mobileNo, password } = req.body;
-  //Basic server side validation
+
+  // Basic validation
   if (!firstName || !lastName || !email || !mobileNo || !password) {
-    res.status(400).json({
+    return res.status(400).json({
       message: "All fields are required",
     });
   }
+
   try {
     const user = await AuthService.signup({
       firstName,
@@ -40,21 +53,27 @@ exports.signup = async (req, res) => {
       password,
     });
 
-    res.status(201).json({
+    return res.status(201).json({
       message: "User registered successfully",
       user,
     });
   } catch (error) {
-    //unique constraint error(email or mobile)
+    // Unique constraint (Postgres error code)
     if (error.code === "23505") {
       return res.status(409).json({
         message: "Email or Mobile number already exists",
       });
     }
 
-    console.log(error);
-    res.status(500).json({
+    console.error("Signup Error:", error);
+
+    return res.status(500).json({
       message: "Internal Server Error",
     });
   }
+};
+
+export default {
+  login,
+  signup,
 };
