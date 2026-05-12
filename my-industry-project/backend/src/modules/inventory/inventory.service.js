@@ -30,11 +30,8 @@ const removeStock = async ({ warehouse_id, product_id, quantity }) => {
   //check for insufficient stock
   if (record.quantity < quantity) throw new Error("Insufficient stock");
 
-  // console.log("old Quantity: ", record.quantity);
-
   //update the quantity
   const newQty = record.quantity - quantity;
-  // console.log("new quantity : ", newQty);
 
   return await inventoryRepo.updateInventory(warehouse_id, product_id, newQty);
 };
@@ -45,13 +42,6 @@ const transferStock = async ({
   product_id,
   quantity,
 }) => {
-  // console.log(
-  //   source_warehouse_id,
-  //   destination_warehouse_id,
-  //   product_id,
-  //   quantity,
-  // );
-
   //here transaction is important
   const client = await pool.connect();
   try {
