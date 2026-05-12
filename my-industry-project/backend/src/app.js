@@ -6,7 +6,7 @@ import productRoutes from "./modules/product/product.route.js";
 import authRoutes from "./modules/auth/auth.routes.js";
 import inventoryRoutes from "./modules/inventory/inventory.route.js";
 import weatherRoutes from "./modules/weather/weather.route.js";
-
+import forecastRoutes from "./modules/forecasting/forecasting.routes.js";
 const app = express();
 
 app.use(cors());
@@ -17,6 +17,7 @@ app.use("/api/warehouses", warehouseRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/inventories", inventoryRoutes);
 app.use("/api/weather", weatherRoutes);
+app.use("/api/forecast", forecastRoutes);
 
 //health endpoint
 app.get("/health", (req, res) => {
