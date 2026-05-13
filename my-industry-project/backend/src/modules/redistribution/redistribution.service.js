@@ -1,6 +1,7 @@
 import redistributionRepo from "./redistribution.repository.js";
 import calculateDistance from "../../utils/distance.js";
 import inventoryService from "../inventory/inventory.service.js";
+import logger from "../../utils/logger.js";
 
 //weights
 const WEIGHTS = {
@@ -12,6 +13,13 @@ const WEIGHTS = {
 
 const redistribution = async () => {
   const lowStockItems = await redistributionRepo.getLowStockItems();
+
+  //log after low stock detection
+  logger.info({
+    type: "LOW_STOCK_DETECTED",
+    count: lowStockItems.length,
+  });
+
   const decisions = [];
 
   for (const item of lowStockItems) {
@@ -62,10 +70,25 @@ const redistribution = async () => {
         WEIGHTS.distance * distance +
         WEIGHTS.stock * availableStock;
 
+      logger.info({
+        type: "REDISTRIBUTION DECISION",
+        product_id,
+        destination: warehouse_id,
+        shortage,
+        predicted_demand: forecast.predicted_demand,
+      });
+
       if (score > bestScore) {
         bestScore = score;
         bestSource = src;
       }
+
+      logger.info({
+        type: "SOURCE_SELECTED",
+        product_id,
+        source: bestSource.warehouse_id,
+        score: bestScore,
+      });
     }
 
     if (bestSource) {
@@ -79,6 +102,14 @@ const redistribution = async () => {
 
       //stock transfer from source to destination warehouse
       try {
+        logger.info({
+          type: "TRANSFER_INITIATED",
+          product_id,
+          from: bestSource.warehouse_id,
+          to: warehouse_id,
+          quantity: transferQty,
+        });
+
         await inventoryService.transferStock({
           source_warehouse_id: bestSource.warehouse_id,
           destination_warehouse_id: warehouse_id,
@@ -86,8 +117,20 @@ const redistribution = async () => {
           quantity: transferQty,
         });
         status = "TRANSFER_EXECUTED";
-      } catch (error) {
+
+        logger.info({
+          type: "TRANSFER_SUCCESS",
+          product_id,
+          from: bestSource.warehouse_id,
+          to: warehouse_id,
+          quantity: transferQty,
+        });
+      } catch (err) {
         status = "TRANSFER_FAILED";
+        logger.info({
+          type: "TRANSFER_FAILED",
+          error: err.message,
+        });
       }
 
       //Log the operation
@@ -99,6 +142,7 @@ const redistribution = async () => {
         bestScore.toFixed(2),
         status,
       );
+
       decisions.push({
         product_id,
         product_name: product.name,
