@@ -27,7 +27,7 @@ app.use("/api/weather", weatherRoutes);
 app.use("/api/forecast", forecastRoutes);
 app.use("/api/redistribution", redistributionRoutes);
 
-//Error Middleware
+//Error
 app.use(errorMiddleware);
 
 //health endpoint
