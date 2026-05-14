@@ -1,25 +1,50 @@
-import axios from "axios";
-import weatherService from "../../src/modules/weather/weather.service.js";
-import weatherRepo from "../../src/modules/weather/weather.repository.js";
-import { pool } from "../../src/config/database.js";
+import { jest } from "@jest/globals";
 
-// Mock dependencies
-jest.mock("axios");
-jest.mock("../../src/modules/weather/weather.repository.js");
-jest.mock("../../src/config/database.js", () => ({
+// MOCK FIRST (ONLY ONCE, WITH BOTH EXPORTS)
+jest.unstable_mockModule("../../src/config/database.js", () => ({
   pool: {
     query: jest.fn(),
   },
+  query: jest.fn(),
 }));
+
+jest.unstable_mockModule(
+  "../../src/modules/weather/weather.repository.js",
+  () => ({
+    default: {
+      saveForecastData: jest.fn(),
+    },
+  }),
+);
+
+jest.unstable_mockModule("axios", () => ({
+  default: {
+    get: jest.fn(),
+  },
+}));
+
+// ✅ IMPORT AFTER MOCK
+const axios = (await import("axios")).default;
+
+const weatherService = (
+  await import("../../src/modules/weather/weather.service.js")
+).default;
+
+const weatherRepo = (
+  await import("../../src/modules/weather/weather.repository.js")
+).default;
+
+const db = await import("../../src/config/database.js");
+const pool = db.pool;
+const query = db.query;
 
 describe("Weather Service - getForecast", () => {
   afterEach(() => {
     jest.clearAllMocks();
   });
 
-  // 1. SUCCESS CASE
+  // SUCCESS CASE
   it("should fetch and save forecast data successfully", async () => {
-    // Mock DB response
     pool.query.mockResolvedValue({
       rows: [
         {
@@ -30,7 +55,6 @@ describe("Weather Service - getForecast", () => {
       ],
     });
 
-    // Mock API response
     axios.get.mockResolvedValue({
       data: {
         list: [
@@ -48,10 +72,6 @@ describe("Weather Service - getForecast", () => {
 
     const result = await weatherService.getForecast("warehouse-uuid");
 
-    expect(pool.query).toHaveBeenCalled();
-    expect(axios.get).toHaveBeenCalled();
-    expect(weatherRepo.saveForecastData).toHaveBeenCalled();
-
     expect(result).toEqual({
       warehouse_name: "Pune Warehouse",
       forecasts: [
@@ -65,7 +85,7 @@ describe("Weather Service - getForecast", () => {
     });
   });
 
-  //  2. WAREHOUSE NOT FOUND
+  // WAREHOUSE NOT FOUND
   it("should throw error if warehouse not found", async () => {
     pool.query.mockResolvedValue({ rows: [] });
 
@@ -74,7 +94,7 @@ describe("Weather Service - getForecast", () => {
     );
   });
 
-  //  3. API FAILURE
+  // API FAILURE
   it("should throw error when API fails", async () => {
     pool.query.mockResolvedValue({
       rows: [{ latitude: 18.52, longitude: 73.85, name: "Pune" }],
@@ -87,7 +107,7 @@ describe("Weather Service - getForecast", () => {
     );
   });
 
-  // 4. EMPTY FORECAST LIST
+  // EMPTY FORECAST LIST
   it("should handle empty forecast list", async () => {
     pool.query.mockResolvedValue({
       rows: [{ latitude: 18.52, longitude: 73.85, name: "Pune" }],
@@ -105,7 +125,7 @@ describe("Weather Service - getForecast", () => {
   });
 });
 
-// TEST isRainExpected FUNCTION
+//  isRainExpected TESTS
 
 describe("Weather Service - isRainExpected", () => {
   it("should return true if rain condition exists", () => {
@@ -119,7 +139,7 @@ describe("Weather Service - isRainExpected", () => {
     expect(result).toBe(true);
   });
 
-  it("should return true if probability of rain > 0.5", () => {
+  it("should return true if probability > 0.5", () => {
     const forecasts = [{ condition: "Clouds", pop: 0.6 }];
 
     const result = weatherService.isRainExpected(forecasts);

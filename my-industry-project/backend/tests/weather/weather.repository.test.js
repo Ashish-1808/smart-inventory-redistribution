@@ -1,22 +1,28 @@
 import { jest } from "@jest/globals";
 
-// Mock FIRST
-jest.mock("../../src/config/database.js", () => ({
+//  ESM MOCK
+jest.unstable_mockModule("../../src/config/database.js", () => ({
   query: jest.fn(),
   pool: {
     query: jest.fn(),
   },
 }));
 
-// Import AFTER mock
-import weatherRepo from "../../src/modules/weather/weather.repository.js";
-import { query, pool } from "../../src/config/database.js";
+// IMPORT AFTER MOCK
+const weatherRepo = (
+  await import("../../src/modules/weather/weather.repository.js")
+).default;
+
+const db = await import("../../src/config/database.js");
+const query = db.query;
+const pool = db.pool;
 
 describe("Weather Repository", () => {
   afterEach(() => {
     jest.clearAllMocks();
   });
 
+  // saveWeatherData
   it("should insert weather data", async () => {
     const mockRow = { warehouse_id: "w1", temperature: 30 };
 
@@ -33,10 +39,21 @@ describe("Weather Repository", () => {
     ]);
   });
 
+  // saveForecastData
   it("should insert multiple forecast records", async () => {
     const forecasts = [
-      { forecast_time: "2026", temperature: 30, condition: "Rain", pop: 0.7 },
-      { forecast_time: "2027", temperature: 31, condition: "Clear", pop: 0.2 },
+      {
+        forecast_time: "2026",
+        temperature: 30,
+        condition: "Rain",
+        pop: 0.7,
+      },
+      {
+        forecast_time: "2027",
+        temperature: 31,
+        condition: "Clear",
+        pop: 0.2,
+      },
     ];
 
     pool.query.mockResolvedValue();
@@ -46,6 +63,7 @@ describe("Weather Repository", () => {
     expect(pool.query).toHaveBeenCalledTimes(2);
   });
 
+  // getLatestForecast
   it("should fetch forecast data", async () => {
     const mockRows = [{ warehouse_id: "w1" }];
 
@@ -56,4 +74,3 @@ describe("Weather Repository", () => {
     expect(result).toEqual(mockRows);
   });
 });
-``;
