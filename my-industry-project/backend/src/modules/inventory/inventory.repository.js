@@ -6,7 +6,6 @@ const findInventory = async () => {
   return rows;
 };
 const findInventoryByWarehouse = async (warehouseId) => {
-  console.log(warehouseId);
   const sql = `SELECT * FROM inventory WHERE warehouse_id=$1`;
   const { rows } = await query(sql, [warehouseId]);
   return rows;
@@ -40,7 +39,6 @@ const updateInventory = async (
   quantity,
   client = null,
 ) => {
-  console.log(quantity);
   const sql = `UPDATE inventory 
     SET quantity=$3,last_updated=CURRENT_TIMESTAMP
     WHERE warehouse_id=$1 and product_id=$2
@@ -61,7 +59,6 @@ const findLowStock = async () => {
   const sql = `SELECT i.id,i.warehouse_id,i.product_id,i.quantity,i.min_threshold,w.name as "warehouse_name",p.name as "product_name" FROM inventory i JOIN warehouses w on i.warehouse_id=w.id JOIN products p on i.product_id=p.id where i.quantity<i.min_threshold ORDER BY i.quantity `;
 
   const { rows } = await query(sql);
-  console.log(rows);
 
   return rows;
 };
