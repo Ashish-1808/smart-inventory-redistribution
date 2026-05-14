@@ -10,15 +10,15 @@ import forecastRoutes from "./modules/forecasting/forecasting.routes.js";
 import redistributionRoutes from "./modules/redistribution/redistribution.routes.js";
 import loggerMiddleware from "./middlewares/logger.middleware.js";
 import errorMiddleware from "./middlewares/error.middleware.js";
-
+import startCronJobs from "./jobs/cron.job.js";
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
 //logger middleware
-// app.use(loggerMiddleware);
-
+app.use(loggerMiddleware);
+startCronJobs();
 app.use("/auth", authRoutes);
 app.use("/api/warehouses", warehouseRoutes);
 app.use("/api/products", productRoutes);

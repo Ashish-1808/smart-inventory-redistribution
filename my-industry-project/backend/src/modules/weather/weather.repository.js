@@ -17,7 +17,14 @@ const saveWeatherData = async (
 
 const saveForecastData = async (warehouseId, forecasts, client = null) => {
   const executor = client || pool;
-  const sql = `INSERT INTO weather_forecast(warehouse_id,forecast_time,temperature,condition,probability_of_rain) VALUES($1,$2,$3,$4,$5)`;
+  const sql = `INSERT INTO weather_forecast(warehouse_id,forecast_time,temperature,condition,probability_of_rain) VALUES($1,$2,$3,$4,$5)
+  ON CONFLICT(warehouse_id,forecast_time)
+  DO UPDATE SET
+  temperature=EXCLUDED.temperature,
+  condition=EXCLUDED.condition,
+  probability_of_rain=EXCLUDED.probability_of_rain,
+  created_at=CURRENT_TIMESTAMP
+  `;
 
   for (const f of forecasts) {
     await executor.query(sql, [
