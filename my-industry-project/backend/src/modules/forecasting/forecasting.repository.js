@@ -14,11 +14,6 @@ const saveForecast = async (
   created_at=CURRENT_TIMESTAMP
   RETURNING *`;
 
-  //   console.log("warehouseId : ", warehouseId);
-  //   console.log("warehouseId : ", typeof warehouseId);
-  //   console.log("predict Demand", predictDemand);
-  //   console.log("Weather factor", weatherFactor);
-
   const { rows } = await pool.query(sql, [
     warehouseId,
     productId,

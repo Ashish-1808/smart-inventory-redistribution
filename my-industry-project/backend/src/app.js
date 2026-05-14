@@ -17,7 +17,7 @@ app.use(cors());
 app.use(express.json());
 
 //logger middleware
-app.use(loggerMiddleware);
+// app.use(loggerMiddleware);
 
 app.use("/auth", authRoutes);
 app.use("/api/warehouses", warehouseRoutes);
@@ -28,7 +28,7 @@ app.use("/api/forecast", forecastRoutes);
 app.use("/api/redistribution", redistributionRoutes);
 
 //Error
-// app.use(errorMiddleware);
+app.use(errorMiddleware);
 
 //health endpoint
 app.get("/health", (req, res) => {

@@ -8,7 +8,6 @@ const generateForecast = async (req, res, next) => {
     // console.log(data);
     sendResponse(res, 200, "Forecast Generated Successfully", data);
   } catch (error) {
-    sendResponse(res, 404, "Error", null, error.message);
     next(error);
   }
 };

@@ -34,11 +34,8 @@ const getWeatherImpact = (product, forecasts) => {
     if (product.priority_level >= 4) {
       impact += 10;
     }
-    return impact;
   }
-  // if (weatherService.isRainExpected(forecasts))
-  //   return 20; //Increase demand based on weather condition
-  // else return 0;
+  return impact;
 };
 
 const generateForecast = async (warehouseId) => {
@@ -110,4 +107,4 @@ const generateForecast = async (warehouseId) => {
 
   return results;
 };
-export default { generateForecast };
+export default { generateForecast, getWeatherImpact };
