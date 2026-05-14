@@ -28,7 +28,7 @@ app.use("/api/forecast", forecastRoutes);
 app.use("/api/redistribution", redistributionRoutes);
 
 //Error
-app.use(errorMiddleware);
+// app.use(errorMiddleware);
 
 //health endpoint
 app.get("/health", (req, res) => {

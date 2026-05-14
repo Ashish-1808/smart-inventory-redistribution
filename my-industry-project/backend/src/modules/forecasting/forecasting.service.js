@@ -42,7 +42,18 @@ const getWeatherImpact = (product, forecasts) => {
 };
 
 const generateForecast = async (warehouseId) => {
-  //1.Get inventory data
+  //check if warehouse exists
+  const warehouseCheck = await query(`SELECT id FROM warehouses WHERE id=$1`, [
+    warehouseId,
+  ]);
+
+  if (warehouseCheck.rows.length === 0) {
+    const error = new Error("Warehouse not found");
+    error.statusCode = 404;
+    throw error;
+  }
+
+  //Get inventory data
   const inventoryRes = await pool.query(
     `SELECT warehouse_id,product_id,quantity FROM inventory where warehouse_id=$1`,
     [warehouseId],
@@ -54,7 +65,7 @@ const generateForecast = async (warehouseId) => {
     throw new Error("No inventory data found");
   }
 
-  //2.Get weather forecast data
+  //Get weather forecast data
   const weatherRes = await pool.query(
     `SELECT * from weather_forecast where warehouse_id=$1 ORDER BY forecast_time ASC`,
     [warehouseId],
@@ -62,7 +73,7 @@ const generateForecast = async (warehouseId) => {
 
   const forecasts = weatherRes.rows;
 
-  //3.forecast Calculation
+  //forecast Calculation
 
   const results = [];
   for (const item of inventory) {

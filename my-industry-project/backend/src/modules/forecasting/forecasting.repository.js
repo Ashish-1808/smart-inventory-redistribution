@@ -10,7 +10,7 @@ const saveForecast = async (
   const sql = `INSERT INTO demand_forecast(warehouse_id,product_id,predicted_demand,weather_factor) VALUES ($1,$2,$3,$4)ON CONFLICT(warehouse_id,product_id)
   DO UPDATE SET
   predicted_demand=EXCLUDED.predicted_demand,
-  weatherFactor=EXCLUDED.weatherFactor,
+  weather_factor=EXCLUDED.weather_factor,
   created_at=CURRENT_TIMESTAMP
   RETURNING *`;
 
@@ -22,7 +22,7 @@ const saveForecast = async (
   const { rows } = await pool.query(sql, [
     warehouseId,
     productId,
-    predictDemand,
+    predictedDemand,
     weatherFactor,
   ]);
 
