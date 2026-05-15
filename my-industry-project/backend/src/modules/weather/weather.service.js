@@ -4,6 +4,27 @@ import { pool, query } from "../../config/database.js";
 
 const API_KEY = process.env.OPENWEATHER_API_KEY;
 
+//Retry Wrapper: retry hitting api 3 times if api fail
+const getForecastWithRetry = async (warehouseId, retries = 3) => {
+  try {
+    return await getForecast(warehouseId);
+  } catch (err) {
+    if (retries > 1) {
+      console.log(
+        `Weather API failed for ${warehouseId},Retrying (${retries})...`,
+      );
+      return getForecastWithRetry(warehouseId, retries - 1);
+    }
+    //Log failures after retries exhausted
+    await query(
+      `INSERT INTO cron_logs (job_name,status,message)
+      VALUES($1,$2,$3)`,
+      ["WEATHER_API", "FAILED", `Warehouse ${warehouseId}:${err.message}`],
+    );
+    throw err;
+  }
+};
+
 const getForecast = async (warehouseId) => {
   //1.fetch warehouse location
   const { rows } = await pool.query(
@@ -47,4 +68,4 @@ const isRainExpected = (forecasts) => {
   return forecasts.some((f) => f.condition === "Rain" || f.pop > 0.5);
 };
 
-export default { getForecast, isRainExpected };
+export default { getForecast, isRainExpected, getForecastWithRetry };

@@ -30,7 +30,7 @@ const startForecastJob = () => {
 
       for (const warehouse of warehouses) {
         //2.Fetch the latest weather from API
-        await weatherService.getForecast(warehouse.id);
+        await weatherService.getForecastWithRetry(warehouse.id);
         //3.Generate Forecast using updated data
         await forecastingService.generateForecast(warehouse.id);
       }
@@ -51,7 +51,7 @@ const startForecastJob = () => {
 
 //Redistribution Job
 const startRedistributionJob = () => {
-  cron.schedule("*/15 * * * * *", async () => {
+  cron.schedule("*/10 * * * * *", async () => {
     const jobName = "REDISTRIBUTION_JOB";
     const start = Date.now();
     try {
