@@ -48,7 +48,7 @@ const getForecast = async (warehouseId) => {
     },
   });
 
-  const forecastsList = response.data.list;
+  const forecastsList = response.data.list || [];
 
   //3.Transform Data
   const forecasts = forecastsList.map((item) => ({

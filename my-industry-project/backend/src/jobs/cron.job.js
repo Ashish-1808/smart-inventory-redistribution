@@ -73,6 +73,11 @@ const startRedistributionJob = () => {
 
 //Start all jobs
 const startCronJobs = () => {
+  if (process.env.NODE_ENV === "test" && !process.env.ENABLE_CRON_TESTS) {
+    console.log("Cron disabled in test environment");
+    return;
+  }
+
   startForecastJob();
   startRedistributionJob();
 };

@@ -1,5 +1,7 @@
 import { afterEach, beforeEach, jest } from "@jest/globals";
 
+process.env.ENABLE_CRON_TESTS = "true";
+
 //Mock modules
 
 //Mock Express
@@ -39,6 +41,7 @@ jest.unstable_mockModule(
   () => ({
     default: {
       getForecast: jest.fn(),
+      getForecastWithRetry: jest.fn(),
     },
   }),
 );
@@ -91,6 +94,7 @@ describe("Cron Automation Workflows", () => {
     cronJobs();
 
     expect(cron.schedule).toHaveBeenCalledTimes(2); // forecast + redistribution
+    expect(scheduledFns.length).toBe(2);
   });
 
   //Test 2: Forecast Flow (Weather → Forecast)
@@ -111,7 +115,7 @@ describe("Cron Automation Workflows", () => {
 
     expect(query).toHaveBeenCalledWith("SELECT id FROM warehouses");
 
-    expect(weatherService.getForecast).toHaveBeenCalledWith("w1");
+    expect(weatherService.getForecastWithRetry).toHaveBeenCalledWith("w1");
 
     expect(forecastingService.generateForecast).toHaveBeenCalledWith("w1");
   });
